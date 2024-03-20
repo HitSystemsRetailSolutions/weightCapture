@@ -4,8 +4,8 @@
 
 El sistema WeightCapture és una solució integrada dissenyada per capturar i emmagatzemar dades de pesatge des de diverses balances a una base de dades centralitzada. Aquesta aplicació facilita la gestió de dades en temps real, proporcionant una interfície entre dispositius de pesatge, una base de dades SQL per a l'emmagatzematge de dades, i una connexió MQTT per a la comunicació remota i el seguiment d'estat.
 
-<p align="center">
-  <img src="Logo.webp" alt="logo" width="100" height="100">
+<p align="Left">
+  <img src="Logo.webp" alt="logo" width="300" height="300">
 </p>
 
 ## Característiques
