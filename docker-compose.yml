@@ -1,7 +1,7 @@
 version: "3.8"
 services:
-  contable:
-    container_name: contable
+  weight:
+    container_name: weightCapture
     build: .
     environment:
       TZ: Europe/Madrid
