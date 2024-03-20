@@ -41,10 +41,26 @@ client.on('connect', () => {
     }
   });
 });
+
 client.on('error', (err) => {
   console.error('Error en el client MQTT:', err);
 });
-  
+
+async function rebutData(data,ip) {
+  client.publish(process.env.MQTT_CLIENT_ID + '/Estat' , 'Datos recibidos del cliente:' + data.toString());
+  console.log('Datos recibidos del cliente:', data.toString());
+
+  sql.connect(dbConfig).then(() => {
+    let sqlSt = `INSERT INTO hit.dbo.Temperatures (id,tmSt,ip,Val) VALUES (newid(),getdate(),'${ip}','${data.toString()}')`;
+    sql.query(sqlSt).then(() => {
+      client.publish(process.env.MQTT_CLIENT_ID + '/Estat' , `Datos ${data.toString()} insertados en la base de datos `);
+    }).catch((err) => {
+      client.publish(process.env.MQTT_CLIENT_ID + '/Estat' , 'Error en la inserción de datos:' + err);
+    });
+  });
+}
+
+
 // Crear un servidor TCP
 const server = net.createServer((socket) => {
     console.log('Cliente conectado');
@@ -56,10 +72,9 @@ const server = net.createServer((socket) => {
 
     // Manejar el evento de recepción de datos
     socket.on('data', (data) => {
-        client.publish(process.env.MQTT_CLIENT_ID + '/Estat' , 'Datos recibidos del cliente:' + data.toString());
-        console.log('Datos recibidos del cliente:', data.toString());
-        // Opcionalmente, enviar una respuesta al cliente
-        socket.write('Mensaje recibido\n');
+      const clientIp = socket.remoteAddress;
+      rebutData(data,clientIp); 
+//      socket.write('Mensaje recibido\n');
     });
     // Manejar el cierre de la conexión
     socket.on('close', () => {
@@ -77,6 +92,10 @@ const server = net.createServer((socket) => {
 server.listen(8081, () => {
     console.log('Servidor escuchando en el puerto 8081');
     client.publish(process.env.MQTT_CLIENT_ID + '/Estat' , 'Servidor escuchando en el puerto 8081');
+    rebutData('12097','192.168.3.3')
+    rebutData('12sdf097','192.168.3.3')
+    rebutData('120sd97','192.168.3.3')
+    rebutData('1207','192.168.3.3')
 });
 
 // Manejar errores del servidor
