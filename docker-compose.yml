@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  contable:
+    container_name: contable
+    build: .
+    environment:
+      TZ: Europe/Madrid
+    restart: unless-stopped
+    ports:
+     - 8081:8081
