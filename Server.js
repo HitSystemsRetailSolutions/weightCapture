@@ -23,7 +23,7 @@ const dbConfig = {
   const mqttOptions = {
     host: process.env.MQTT_HOST,
     port: process.env.MQTT_PORT,
-    clientId: process.env.MQTT_CLIENT_ID,
+    clientId: (process.env.NODE_ENV) ? `${process.env.MQTT_CLIENT_ID}-${process.env.NODE_ENV}` : process.env.MQTT_CLIENT_ID,
     username: process.env.MQTT_USER,
     password: process.env.MQTT_PASSWORD,
   };
@@ -50,16 +50,23 @@ async function rebutData(data,ip) {
   client.publish(process.env.MQTT_CLIENT_ID + '/Estat' , 'Datos recibidos del cliente:' + data.toString());
   console.log('Datos recibidos del cliente:', data.toString());
 
-  sql.connect(dbConfig).then(() => {
-    let sqlSt = `INSERT INTO hit.dbo.Temperatures (id,tmSt,ip,Val) VALUES (newid(),getdate(),'${ip}','${data.toString()}')`;
-    sql.query(sqlSt).then(() => {
-      client.publish(process.env.MQTT_CLIENT_ID + '/Estat' , `Datos ${data.toString()} insertados en la base de datos `);
-    }).catch((err) => {
-      client.publish(process.env.MQTT_CLIENT_ID + '/Estat' , 'Error en la inserción de datos:' + err);
+  let pes = data.toString().split(',')[2];
+  console.log(pes)
+  if (/^\d+$/.test(pes)){
+    client.publish(process.env.MQTT_CLIENT_ID + '/Estat' , `format incorrecte `);
+  }else{
+    sql.connect(dbConfig).then(() => {
+      let sqlSt = `INSERT INTO hit.dbo.Temperatures (id,tmSt,ip,Val) VALUES (newid(),getdate(),'${ip}','${pes}')
+                  delete fac_demo.dbo.impresoracola where impresora = 'Obrador_02_cascos3' 
+                  insert into fac_demo.dbo.impresoracola  (id,impresora,texte) values (newid(),'Obrador_02_cascos3','Rebut pes \n ************************************\n \n PES: ${pes}\n \n\n \nData: ' + FORMAT(GETDATE(), 'yyyy-MM-dd HH:mm:ss') + '\n \n ************************************\n') `;
+      sql.query(sqlSt).then(() => {
+        client.publish(process.env.MQTT_CLIENT_ID + '/Estat' , `Datos ${pes} insertados en la base de datos `);
+      }).catch((err) => {
+        client.publish(process.env.MQTT_CLIENT_ID + '/Estat' , 'Error en la inserción de datos:' + err);
+      });
     });
-  });
+  }  
 }
-
 
 // Crear un servidor TCP
 const server = net.createServer((socket) => {
@@ -92,10 +99,7 @@ const server = net.createServer((socket) => {
 server.listen(8081, () => {
     console.log('Servidor escuchando en el puerto 8081');
     client.publish(process.env.MQTT_CLIENT_ID + '/Estat' , 'Servidor escuchando en el puerto 8081');
-    rebutData('12097','192.168.3.3')
-    rebutData('12sdf097','192.168.3.3')
-    rebutData('120sd97','192.168.3.3')
-    rebutData('1207','192.168.3.3')
+//    rebutData('1,ST,     0.925,','192.168.3.3')
 });
 
 // Manejar errores del servidor
