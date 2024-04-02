@@ -56,9 +56,9 @@ async function rebutData(data,ip) {
     client.publish(process.env.MQTT_CLIENT_ID + '/Estat' , `format incorrecte `);
   }else{
     sql.connect(dbConfig).then(() => {
-      let sqlSt = `INSERT INTO hit.dbo.Temperatures (id,tmSt,ip,Val) VALUES (newid(),getdate(),'${ip}','${pes}')
-                  delete fac_demo.dbo.impresoracola where impresora = 'Obrador_02_cascos3' 
-                  insert into fac_demo.dbo.impresoracola  (id,impresora,texte) values (newid(),'Obrador_02_cascos3','Rebut pes \n ************************************\n \n PES: ${pes}\n \n\n \nData: ' + FORMAT(GETDATE(), 'yyyy-MM-dd HH:mm:ss') + '\n \n ************************************\n') `;
+      let sqlSt = `INSERT INTO hit.dbo.PesosWifi (id,tmSt,ip,Val) VALUES (newid(),getdate(),'${ip}','${pes}')
+                  delete fac_demo.dbo.impresoracola where impresora = 'Bascula_01' 
+                  insert into fac_demo.dbo.impresoracola  (id,impresora,texte) values (newid(),'Bascula_01','Rebut pes \n ************************************\n \n PES: ${pes}\n \n\n \nData: ' + FORMAT(GETDATE(), 'yyyy-MM-dd HH:mm:ss') + '\n \n ************************************\n') `;
       sql.query(sqlSt).then(() => {
         client.publish(process.env.MQTT_CLIENT_ID + '/Estat' , `Datos ${pes} insertados en la base de datos `);
       }).catch((err) => {
